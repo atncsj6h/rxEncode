@@ -1,0 +1,36 @@
+# A make file that should work on most Unix-like platforms
+
+LIBP = lib
+LIB1 = rxencode
+
+REXX_INCDIR := $(shell ooRexx-config  --cflags)
+
+OTHR_CFLAGS :=
+
+REXX_LFLAGS := $(shell ooRexx-config --libs)
+REXX_RPATH  := $(shell ooRexx-config --rpath)
+
+SRCS := src/rxEncode.cpp lib/encode.cpp
+OBJS := $(addsuffix .o,$(basename $(SRCS)))
+
+UNAME := $(shell uname -s)
+ifeq ($(UNAME),Darwin)
+	EXT = dylib
+	OTHR_LFLAGS := -dynamiclib
+else
+  EXT = so
+  OTHR_LFLAGS := -shared -export-dynamic -nostartfiles
+endif
+
+CPPFLAGS = -Iinclude -Ilib/include $(REXX_INCDIR)
+CXXFLAGS = $(OTHR_FLAGS)
+
+# What we want to build.
+all: $(LIBP)$(LIB1).$(EXT)
+
+$(LIBP)$(LIB1).$(EXT): $(OBJS)
+	$(CC) $(OBJS) -O3 -o $@ $(REXX_LFLAGS) $(OTHR_LFLAGS)
+
+.PHONY: clean
+clean:
+	$(RM) $(LIBP)$(LIB1).$(EXT) $(OBJS) $(DEPS)
